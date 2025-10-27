@@ -632,8 +632,29 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                 }
 
                 // Check if torrent is complete, or if we don't want to download any files to the host.
-                if ((torrent.Downloads.Count > 0) ||
-                    torrent.RdStatus == TorrentStatus.Finished && torrent.HostDownloadAction == TorrentHostDownloadAction.DownloadNone)
+                if (torrent.RdStatus == TorrentStatus.Finished && torrent.HostDownloadAction == TorrentHostDownloadAction.DownloadNone)
+                {
+                    Log($"HostDownloadAction is DownloadNone and torrent is finished, marking torrent as complete", torrent);
+
+                    if (torrent.FilesSelected == null)
+                    {
+                        Log($"Selecting files before running post-process script", torrent);
+                        await torrents.SelectFiles(torrent.TorrentId);
+                        await torrents.UpdateFilesSelected(torrent.TorrentId, DateTime.UtcNow);
+                    }
+
+                    await torrents.UpdateComplete(torrent.TorrentId, null, DateTimeOffset.UtcNow, true);
+
+                    try
+                    {
+                        await torrents.RunTorrentComplete(torrent.TorrentId);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex.Message, "Unable to run post process: {Message}", ex.Message);
+                    }
+                }
+                else if (torrent.Downloads.Count > 0)
                 {
                     var completeCount = torrent.Downloads.Count(m => m.Completed != null);
 

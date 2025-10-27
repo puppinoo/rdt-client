@@ -77,24 +77,26 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
                     {
                         logger.Log(LogLevel.Debug, "Processing {torrentFile}", torrentFile);
 
+                        var watchDefaultSettings = Settings.Get.Watch.Default;
+
                         var torrent = new Torrent
                         {
                             DownloadClient = Settings.Get.DownloadClient.Client,
-                            Category = Settings.Get.Watch.Default.Category,
-                            HostDownloadAction = Settings.Get.Watch.Default.HostDownloadAction,
-                            FinishedActionDelay = Settings.Get.Watch.Default.FinishedActionDelay,
-                            DownloadAction = Settings.Get.Watch.Default.OnlyDownloadAvailableFiles
+                            Category = watchDefaultSettings.Category,
+                            HostDownloadAction = watchDefaultSettings.HostDownloadAction,
+                            FinishedActionDelay = watchDefaultSettings.FinishedActionDelay,
+                            DownloadAction = watchDefaultSettings.OnlyDownloadAvailableFiles
                                 ? TorrentDownloadAction.DownloadAvailableFiles
                                 : TorrentDownloadAction.DownloadAll,
-                            FinishedAction = Settings.Get.Watch.Default.FinishedAction,
-                            DownloadMinSize = Settings.Get.Watch.Default.MinFileSize,
-                            IncludeRegex = Settings.Get.Watch.Default.IncludeRegex,
-                            ExcludeRegex = Settings.Get.Watch.Default.ExcludeRegex,
-                            TorrentRetryAttempts = Settings.Get.Watch.Default.TorrentRetryAttempts,
-                            DownloadRetryAttempts = Settings.Get.Watch.Default.DownloadRetryAttempts,
-                            DeleteOnError = Settings.Get.Watch.Default.DeleteOnError,
-                            Lifetime = Settings.Get.Watch.Default.TorrentLifetime,
-                            Priority = Settings.Get.Watch.Default.Priority > 0 ? Settings.Get.Watch.Default.Priority : null
+                            FinishedAction = watchDefaultSettings.FinishedAction,
+                            DownloadMinSize = watchDefaultSettings.MinFileSize,
+                            IncludeRegex = watchDefaultSettings.IncludeRegex,
+                            ExcludeRegex = watchDefaultSettings.ExcludeRegex,
+                            TorrentRetryAttempts = watchDefaultSettings.TorrentRetryAttempts,
+                            DownloadRetryAttempts = watchDefaultSettings.DownloadRetryAttempts,
+                            DeleteOnError = watchDefaultSettings.DeleteOnError,
+                            Lifetime = watchDefaultSettings.TorrentLifetime,
+                            Priority = watchDefaultSettings.Priority > 0 ? watchDefaultSettings.Priority : null
                         };
 
                         if (fileInfo.Extension == ".torrent")
@@ -150,6 +152,11 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
                         File.Move(torrentFile, processedPath);
                     }
                 }
+            }
+            catch (TaskCanceledException)
+            {
+                // This is expected when the host is shutting down.
+                break; // Exit the loop gracefully
             }
             catch (Exception ex)
             {

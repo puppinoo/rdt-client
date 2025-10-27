@@ -836,6 +836,8 @@ public class Torrents(
 
         var torrent = await torrentData.GetById(torrentId) ?? throw new($"Cannot find Torrent with ID {torrentId}");
 
+
+
         var downloadsForTorrent = await downloads.GetForTorrent(torrentId);
 
         var fileName = settings.General.RunOnTorrentCompleteFileName;
@@ -848,13 +850,17 @@ public class Torrents(
 
         var filePath = torrentPath;
 
-        var files = fileSystem.Directory.GetFiles(filePath);
-
-        if (files.Length == 1)
+        if (fileSystem.Directory.Exists(torrentPath))
         {
-            filePath = Path.Combine(torrentPath, files[0]);
+            var files = fileSystem.Directory.GetFiles(filePath);
+
+            if (files.Length == 1)
+            {
+                filePath = Path.Combine(torrentPath, files[0]);
+            }
         }
 
+        arguments = arguments.Replace("%RD_ID", torrent.RdId);
         arguments = arguments.Replace("%N", $"\"{torrent.RdName}\"");
         arguments = arguments.Replace("%L", $"\"{torrent.Category}\"");
         arguments = arguments.Replace("%F", $"\"{filePath}\"");
