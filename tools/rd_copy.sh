@@ -22,6 +22,6 @@ echo "Source: $SOURCE_PATH"
 echo "Destination: $DESTINATION_PATH"
 
 # Use rclone copy to copy the torrent directory from the local mount.
-/config/rclone/rclone copy "$SOURCE_PATH" "$DESTINATION_PATH" --progress --error-on-no-transfer --transfers 1 --ignore-existing --ftp-concurrency 1
+rclone copy "$SOURCE_PATH" "$DESTINATION_PATH" --progress --error-on-no-transfer --transfers 1 --ignore-existing --ftp-concurrency 1
 
 echo "rclone copy finished."

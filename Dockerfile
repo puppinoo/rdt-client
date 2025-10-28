@@ -61,7 +61,7 @@ RUN \
    echo "**** Updating package information ****" && \
    apk update && \
    echo "**** Install pre-reqs ****" && \
-   apk add bash icu-libs krb5-libs libgcc libintl libssl3 libstdc++ zlib curl jq && \
+   apk add bash icu-libs krb5-libs libgcc libintl libssl3 libstdc++ zlib curl jq rclone && \
    echo "**** Installing dotnet ****" && \
    mkdir -p /usr/share/dotnet
 
@@ -92,6 +92,10 @@ WORKDIR /app
 COPY --from=dotnet-build-env /appserver/server/out .
 COPY --from=node-build-env /appclient/client/out/browser ./wwwroot
 COPY --from=node-build-env /appclient/root/ /
+
+# Copy the rclone script
+COPY tools/rd_copy.sh /usr/local/bin/rclone_copyurl.sh
+RUN chmod +x /usr/local/bin/rclone_copyurl.sh
 
 # ports and volumes
 EXPOSE 6500
